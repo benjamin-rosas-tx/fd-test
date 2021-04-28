@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!-- saved from url=(0087)https://barbri.freshdesk.com/support/recaptcha#6LdvejUUAAAAAEn6wjOFcPVRyQr4KtAJ03ltA1SQ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+</head>
+
+<body>
+  <div id="recaptcha"><div style="width: 304px; height: 78px;"><div><iframe title="reCAPTCHA" src="./anchor.html" width="304" height="78" role="presentation" name="a-xkit3i31w0rx" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox"></iframe></div><textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div><iframe style="display: none;" src="./saved_resource(2).html"></iframe></div>
+
+  <script type="text/javascript" async="" src="./recaptcha__es.js" crossorigin="anonymous" integrity="sha384-QjYr+a4lejSRz6HGHFF6gLEiVvikRofhy2VQBf5RDW0QUtED9PI6kTdQ242xyuzX"></script><script src="./api.js"></script>
+  <script type="text/javascript" id="executable-script">
+    var parentPort = null;
+
+    // get port from parent
+    window.addEventListener('message', initPort);
+
+    function initPort(e) {
+      if (e.origin === window.location.origin) { // to prevent messages from google captcha
+        parentPort = e.ports[0]
+      }
+    }
+
+    window.onload = function () {
+      // get site key
+      var $element = document.getElementById('recaptcha')
+      var sitekey = window.location.hash.replace('#', '')
+
+      // render captcha
+      grecaptcha.render($element, {
+        'sitekey': sitekey,
+        'callback': function (response) {
+          parentPort.postMessage({
+            type: 'token',
+            token: response
+          })
+        },
+        'expired-callback': function () {
+          createObsever()
+        },
+        'error-callback': function () {
+          parentPort.postMessage({
+            type: 'minimize',
+          })
+          createObsever()
+        },
+        'theme': 'light'
+      })
+
+      // observer to resize the iframe
+      function createObserver() {
+        if ("MutationObserver" in window) {
+          function addObserver() {
+            window.setTimeout(function () {
+              var $bubbleParent = document.getElementById("executable-script");
+              var $captchaBubble = $bubbleParent.nextElementSibling
+              if (!$captchaBubble) { // recurse till we get the bubble element
+                addObserver()
+                return true
+              }
+
+              var observerCallback = function () {
+                if ($captchaBubble.style.visibility === "visible") {
+                  parentPort.postMessage({
+                    type: 'expand'
+                  })
+                } else if ($captchaBubble.style.visibility === "hidden") {
+                  parentPort.postMessage({
+                    type: 'minimize'
+                  })
+                }
+              }
+
+              var observer = new MutationObserver(observerCallback);
+              observer.observe($captchaBubble, {
+                attributes: true
+              });
+
+            }, 300)
+          }
+
+          addObserver()
+        }
+      }
+
+      createObserver()
+    }
+  </script>
+
+
+<div style="visibility: hidden; position: absolute; width: 100%; top: -10000px; left: 0px; right: 0px; transition: visibility 0s linear 0.3s, opacity 0.3s linear 0s; opacity: 0;"><div style="width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; z-index: 2000000000; background-color: rgb(255, 255, 255); opacity: 0.5;"></div><div style="margin: 0px auto; top: 0px; left: 0px; right: 0px; position: absolute; border: 1px solid rgb(204, 204, 204); z-index: 2000000000; background-color: rgb(255, 255, 255); overflow: hidden;"><iframe title="Prueba reCAPTCHA" src="./bframe.html" name="c-xkit3i31w0rx" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox" style="width: 100%; height: 100%;"></iframe></div></div></body></html>
